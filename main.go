@@ -1,39 +1,32 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/caarlos0/env/v11"
+	"github.com/caarlos0/env"
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func main() {
-	helloHandler := http.HandlerFunc(hello)
-	http.HandleFunc("/hello", checkAPIKeyMiddleware(helloHandler))
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatal(err)
-	}
+	e := echo.New()
+	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+		KeyLookup: "header:X-API-KEY",
+		Validator: func(key string, c echo.Context) (bool, error) {
+			cfg := LoadEnv()
+			apiKey := cfg.APIKey
+			return key == apiKey, nil
+		},
+	}))
+
+	e.GET("/hello", hello)
+	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func hello(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "200 OK")
-}
-
-func checkAPIKeyMiddleware(next http.Handler) http.HandlerFunc {
-	cfg := LoadEnv()
-	apiKey := cfg.APIKey
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		key := r.Header.Get("X-API-KEY")
-		if key != apiKey {
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		next.ServeHTTP(w, r)
-	}
+func hello(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{"message": "Hello World"})
 }
 
 type Config struct {

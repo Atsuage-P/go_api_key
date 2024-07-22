@@ -16,3 +16,6 @@ curl -H 'X-API-KEY:testkey' localhost:8080/hello
 
 ## メモ
 - ミドルウェアを使ってAPIキーによる認証を実施
+- `echo` を使用
+  - 標準のミドルウェアによる実装
+  - 自作ミドルウェアによる実装
