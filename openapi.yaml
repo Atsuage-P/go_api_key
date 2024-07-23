@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: APIキーサンプル
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: ローカル環境
+paths:
+  /hello:
+    get:
+      description: Hello Worldを返す
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloRes'
+  /number:
+    post:
+      description: 受け取った数字に1を足して返す
+      parameters:
+        - name: X-API-KEY
+          in: header
+          schema:
+            type: string
+          required: true
+          description: APIキー
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NumberReq'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberRes'
+        '400':
+          description: StatusBadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: StatusUnauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+    delete:
+      description: 受け取った数字から1を引いて返す
+      parameters:
+        - name: X-API-KEY
+          in: header
+          schema:
+            type: string
+          required: true
+          description: APIキー
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NumberReq'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberRes'
+        '400':
+          description: StatusBadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/400'
+        '401':
+          description: StatusUnauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'
+components:
+  schemas:
+    'HelloRes':
+      type: object
+      properties:
+        message:
+          type: string
+          example: Hello World
+    'NumberReq':
+      type: object
+      properties:
+        num:
+          type: integer
+          example: 1
+          required:
+            - num
+    'NumberRes':
+      type: object
+      properties:
+        num:
+          type: integer
+          example: 1
+          required:
+            - num
+    '400':
+      type: object
+      properties:
+        message:
+          type: string
+          example: Bad Request
+    '401':
+      type: object
+      properties:
+        message:
+          type: string
+          example: Unauthorized

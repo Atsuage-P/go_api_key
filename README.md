@@ -11,11 +11,22 @@ cp .env.local .env
 go run main.go
 
 # 別ターミナルでAPIコール
-curl -H 'X-API-KEY:testkey' localhost:8080/hello
+curl localhost:8080/hello
+
+# POSTでリクエストボディの数字に1加えたものを返す
+curl -X POST -H 'X-API-KEY:testkey' -H 'Content-Type:application/json' -d '{"num": 1}' localhost:8080/number
+
+# DELETEでリクエストボディの数字から1引いたものを返す
+curl -X DELETE -H 'X-API-KEY:testkey' -H 'Content-Type:application/json' -d '{"num": 1}' localhost:8080/number
 ```
 
 ## メモ
 - ミドルウェアを使ってAPIキーによる認証を実施
 - `echo` を使用
   - 標準のミドルウェアによる実装
-  - 自作ミドルウェアによる実装
+  - ~~自作ミドルウェアによる実装~~
+- `oapi-codegen` でOpenAPIのドキュメントからコードの生成
+  - `oapi_cfg.yaml` の設定は [ここ](https://github.com/oapi-codegen/oapi-codegen/blob/main/configuration-schema.json) を参照する
+```
+oapi-codegen -config oapi_cfg.yaml openapi.yaml > ./oapi/oapi.gen.go
+```

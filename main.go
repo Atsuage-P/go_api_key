@@ -4,29 +4,68 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/caarlos0/env"
+	"api_key_test/oapi"
+
+	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {
 	e := echo.New()
-	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
-		KeyLookup: "header:X-API-KEY",
-		Validator: func(key string, c echo.Context) (bool, error) {
-			cfg := LoadEnv()
-			apiKey := cfg.APIKey
-			return key == apiKey, nil
-		},
-	}))
-
-	e.GET("/hello", hello)
+	api := &apiController{}
+	oapi.RegisterHandlers(e, api)
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func hello(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{"message": "Hello World"})
+type apiController struct{}
+
+// インターフェース実装の確認
+var _ oapi.ServerInterface = (*apiController)(nil)
+
+func (a *apiController) GetHello(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, map[string]string{"message": "Hello World"})
+}
+
+func (a *apiController) DeleteNumber(ctx echo.Context, params oapi.DeleteNumberParams) error {
+	cfg := LoadEnv()
+	if err := validateAPIKey(ctx, params.XAPIKEY, cfg.APIKey); err != nil {
+		return err
+	}
+
+	req := new(oapi.NumberReq)
+	if err := bindRequest(ctx, req); err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, (*req.Num)-1)
+}
+
+func (a *apiController) PostNumber(ctx echo.Context, params oapi.PostNumberParams) error {
+	cfg := LoadEnv()
+	if err := validateAPIKey(ctx, params.XAPIKEY, cfg.APIKey); err != nil {
+		return err
+	}
+
+	req := new(oapi.NumberReq)
+	if err := bindRequest(ctx, req); err != nil {
+		return err
+	}
+
+	return ctx.JSON(http.StatusOK, (*req.Num)+1)
+}
+
+func validateAPIKey(ctx echo.Context, reqKey string, expectedKey string) error {
+	if reqKey != expectedKey {
+		return ctx.JSON(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+	}
+	return nil
+}
+
+func bindRequest(ctx echo.Context, req interface{}) error {
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+	}
+	return nil
 }
 
 type Config struct {

@@ -1,0 +1,7 @@
+package: oapi
+generate:
+  echo-server: true
+  models: true
+output: oapi/oapi.gen.go
+output-options:
+  skip-prune: true
