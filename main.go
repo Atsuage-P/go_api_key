@@ -29,43 +29,30 @@ func (a *apiController) GetHello(ctx echo.Context) error {
 
 func (a *apiController) DeleteNumber(ctx echo.Context, params oapi.DeleteNumberParams) error {
 	cfg := LoadEnv()
-	if err := validateAPIKey(ctx, params.XAPIKEY, cfg.APIKey); err != nil {
-		return err
+	if params.XAPIKEY != cfg.APIKey {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
 	}
 
 	req := new(oapi.NumberReq)
-	if err := bindRequest(ctx, req); err != nil {
-		return err
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
+
 	return ctx.JSON(http.StatusOK, (*req.Num)-1)
 }
 
 func (a *apiController) PostNumber(ctx echo.Context, params oapi.PostNumberParams) error {
 	cfg := LoadEnv()
-	if err := validateAPIKey(ctx, params.XAPIKEY, cfg.APIKey); err != nil {
-		return err
+	if params.XAPIKEY != cfg.APIKey {
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
 	}
 
 	req := new(oapi.NumberReq)
-	if err := bindRequest(ctx, req); err != nil {
-		return err
+	if err := ctx.Bind(req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
 	return ctx.JSON(http.StatusOK, (*req.Num)+1)
-}
-
-func validateAPIKey(ctx echo.Context, reqKey string, expectedKey string) error {
-	if reqKey != expectedKey {
-		return ctx.JSON(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
-	}
-	return nil
-}
-
-func bindRequest(ctx echo.Context, req interface{}) error {
-	if err := ctx.Bind(req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
-	}
-	return nil
 }
 
 type Config struct {
