@@ -2,9 +2,12 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"api_key_test/oapi"
+	"api_key_test/structlog"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -12,6 +15,8 @@ import (
 )
 
 func main() {
+	slog.SetDefault(slog.New(structlog.NewLogHandler(slog.NewJSONHandler(os.Stdout, nil))))
+
 	e := echo.New()
 	api := &apiController{}
 	oapi.RegisterHandlers(e, api)
@@ -23,36 +28,52 @@ type apiController struct{}
 // インターフェース実装の確認
 var _ oapi.ServerInterface = (*apiController)(nil)
 
-func (a *apiController) GetHello(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, map[string]string{"message": "Hello World"})
+func (a *apiController) GetHello(c echo.Context) error {
+	ctx := c.Request().Context()
+	ctx = structlog.WithValue(ctx, "test", "hoge")
+	slog.InfoContext(ctx, "success", "method", "GetHello")
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "Hello World"})
 }
 
-func (a *apiController) DeleteNumber(ctx echo.Context, params oapi.DeleteNumberParams) error {
+func (a *apiController) DeleteNumber(c echo.Context, params oapi.DeleteNumberParams) error {
+	ctx := c.Request().Context()
+	ctx = structlog.WithValue(ctx, "params", params)
+
 	cfg := LoadEnv()
 	if params.XAPIKEY != cfg.APIKey {
-		return ctx.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
+		slog.ErrorContext(ctx, "Wrong API Key", "method", "DeleteNumber")
+		return c.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
 	}
 
 	req := new(oapi.NumberReq)
-	if err := ctx.Bind(req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
+	if err := c.Bind(req); err != nil {
+		slog.ErrorContext(ctx, "Request Bind Error", "method", "DeleteNumber")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
-	return ctx.JSON(http.StatusOK, (*req.Num)-1)
+	slog.InfoContext(ctx, "success", "method", "DeleteNumber")
+	return c.JSON(http.StatusOK, (*req.Num)-1)
 }
 
-func (a *apiController) PostNumber(ctx echo.Context, params oapi.PostNumberParams) error {
+func (a *apiController) PostNumber(c echo.Context, params oapi.PostNumberParams) error {
+	ctx := c.Request().Context()
+	ctx = structlog.WithValue(ctx, "params", params)
+
 	cfg := LoadEnv()
 	if params.XAPIKEY != cfg.APIKey {
-		return ctx.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
+		slog.ErrorContext(ctx, "Wrong API Key", "method", "PostNumber")
+		return c.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
 	}
 
 	req := new(oapi.NumberReq)
-	if err := ctx.Bind(req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
+	if err := c.Bind(req); err != nil {
+		slog.ErrorContext(ctx, "Request Bind Error", "method", "PostNumber")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
-	return ctx.JSON(http.StatusOK, (*req.Num)+1)
+	slog.InfoContext(ctx, "success", "method", "PostNumber")
+	return c.JSON(http.StatusOK, (*req.Num)+1)
 }
 
 type Config struct {

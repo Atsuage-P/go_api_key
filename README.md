@@ -30,3 +30,7 @@ curl -X DELETE -H 'X-API-KEY:testkey' -H 'Content-Type:application/json' -d '{"n
 ```
 oapi-codegen -config oapi_cfg.yaml openapi.yaml > ./oapi/oapi.gen.go
 ```
+- `slog` によるログ出力
+  - Go v1.21から導入された `slog` での構造化ログを確認する(サードパーティ製では `zap` が有名)
+  - [参考にした実装](https://github.com/PumpkinSeed/slog-context/blob/main/examples/main.go)
+  - [参考記事](https://blog.arthur1.dev/entry/2024/05/18/212731)
