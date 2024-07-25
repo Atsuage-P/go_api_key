@@ -34,3 +34,4 @@ oapi-codegen -config oapi_cfg.yaml openapi.yaml > ./oapi/oapi.gen.go
   - Go v1.21から導入された `slog` での構造化ログを確認する(サードパーティ製では `zap` が有名)
   - [参考にした実装](https://github.com/PumpkinSeed/slog-context/blob/main/examples/main.go)
   - [参考記事](https://blog.arthur1.dev/entry/2024/05/18/212731)
+- `cotroller`パッケージのテスト実行時はcontrollerディレクトリ以下に.envをコピーする必要あり
