@@ -39,8 +39,13 @@ func (a *APIController) DeleteNumber(c echo.Context, params oapi.DeleteNumberPar
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
+	if req.Num == nil {
+		slog.ErrorContext(ctx, "Wrong Request Body", "method", "PostNumber")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
+	}
+
 	slog.InfoContext(ctx, "success", "method", "DeleteNumber")
-	return c.JSON(http.StatusOK, map[string]int{"num": (*req.Num)-1})
+	return c.JSON(http.StatusOK, map[string]int{"num": (*req.Num) - 1})
 }
 
 func (a *APIController) PostNumber(c echo.Context, params oapi.PostNumberParams) error {
@@ -59,6 +64,11 @@ func (a *APIController) PostNumber(c echo.Context, params oapi.PostNumberParams)
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
+	if req.Num == nil {
+		slog.ErrorContext(ctx, "Wrong Request Body", "method", "PostNumber")
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
+	}
+
 	slog.InfoContext(ctx, "success", "method", "PostNumber")
-	return c.JSON(http.StatusOK, map[string]int{"num": (*req.Num)+1})
+	return c.JSON(http.StatusOK, map[string]int{"num": (*req.Num) + 1})
 }
