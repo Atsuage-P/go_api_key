@@ -5,6 +5,7 @@ import (
 	"api_key_test/oapi"
 	"api_key_test/structlog"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -28,6 +29,16 @@ func (a *APIController) DeleteNumber(c echo.Context, params oapi.DeleteNumberPar
 	ctx := c.Request().Context()
 	ctx = structlog.WithValue(ctx, "params", params)
 
+	defer func() {
+		if v := recover(); v != nil {
+			errMsg := fmt.Errorf("Recovered from: %v", v)
+			slog.ErrorContext(ctx, errMsg.Error(), "method", "DeleteNumber")
+			if err := c.JSON(http.StatusInternalServerError, map[string]string{"message": http.StatusText(http.StatusInternalServerError)}); err != nil {
+				slog.ErrorContext(ctx, err.Error(), "method", "DeleteNumber")
+			}
+		}
+	}()
+
 	if err := validateAPIKey(params.XAPIKEY); err != nil {
 		slog.ErrorContext(ctx, "Wrong API Key", "method", "DeleteNumber")
 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
@@ -39,13 +50,28 @@ func (a *APIController) DeleteNumber(c echo.Context, params oapi.DeleteNumberPar
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
+	num := *req.Num - 1
+	res := oapi.NumberRes{
+		Num: &num,
+	}
+
 	slog.InfoContext(ctx, "success", "method", "DeleteNumber")
-	return c.JSON(http.StatusOK, map[string]int{"num": (*req.Num) - 1})
+	return c.JSON(http.StatusOK, res)
 }
 
 func (a *APIController) PostNumber(c echo.Context, params oapi.PostNumberParams) error {
 	ctx := c.Request().Context()
 	ctx = structlog.WithValue(ctx, "params", params)
+
+	defer func() {
+		if v := recover(); v != nil {
+			errMsg := fmt.Errorf("Recovered from: %v", v)
+			slog.ErrorContext(ctx, errMsg.Error(), "method", "PostNumber")
+			if err := c.JSON(http.StatusInternalServerError, map[string]string{"message": http.StatusText(http.StatusInternalServerError)}); err != nil {
+				slog.ErrorContext(ctx, err.Error(), "method", "PostNumber")
+			}
+		}
+	}()
 
 	if err := validateAPIKey(params.XAPIKEY); err != nil {
 		slog.ErrorContext(ctx, "Wrong API Key", "method", "PostNumber")
@@ -58,8 +84,13 @@ func (a *APIController) PostNumber(c echo.Context, params oapi.PostNumberParams)
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
+	num := *req.Num + 1
+	res := oapi.NumberRes{
+		Num: &num,
+	}
+
 	slog.InfoContext(ctx, "success", "method", "PostNumber")
-	return c.JSON(http.StatusOK, map[string]int{"num": (*req.Num) + 1})
+	return c.JSON(http.StatusOK, res)
 }
 
 func validateAPIKey(reqKey string) error {
