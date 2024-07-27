@@ -61,6 +61,12 @@ func TestPostNumber(t *testing.T) {
 			http.StatusBadRequest,
 		},
 		{
+			"異常系_リクエストボディの型不一致",
+			"testkey",
+			`{"num": "1"}`,
+			http.StatusBadRequest,
+		},
+		{
 			"異常系_API_KEY不一致",
 			"",
 			`{"num": 1}`,
@@ -112,6 +118,12 @@ func TestDeleteNumber(t *testing.T) {
 			"異常系_リクエストボディ不足",
 			"testkey",
 			`{}`,
+			http.StatusBadRequest,
+		},
+		{
+			"異常系_リクエストボディの型不一致",
+			"testkey",
+			`{"num": "1"}`,
 			http.StatusBadRequest,
 		},
 		{
