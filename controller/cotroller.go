@@ -1,13 +1,14 @@
 package controller
 
 import (
-	"api_key_test/env"
-	"api_key_test/oapi"
-	"api_key_test/structlog"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+
+	"api_key_test/env"
+	"api_key_test/oapi"
+	"api_key_test/structlog"
 
 	"github.com/labstack/echo/v4"
 )
@@ -33,7 +34,11 @@ func (a *APIController) DeleteNumber(c echo.Context, params oapi.DeleteNumberPar
 		if v := recover(); v != nil {
 			errMsg := fmt.Errorf("Recovered from: %v", v)
 			slog.ErrorContext(ctx, errMsg.Error(), "method", "DeleteNumber")
-			if err := c.JSON(http.StatusInternalServerError, map[string]string{"message": http.StatusText(http.StatusInternalServerError)}); err != nil {
+			if err := c.JSON(
+				http.StatusInternalServerError,
+				map[string]string{
+					"message": http.StatusText(http.StatusInternalServerError),
+				}); err != nil {
 				slog.ErrorContext(ctx, err.Error(), "method", "DeleteNumber")
 			}
 		}
@@ -41,12 +46,14 @@ func (a *APIController) DeleteNumber(c echo.Context, params oapi.DeleteNumberPar
 
 	if err := validateAPIKey(params.XAPIKEY); err != nil {
 		slog.ErrorContext(ctx, "Wrong API Key", "method", "DeleteNumber")
+
 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
 	}
 
 	req, err := validateRequestBody(c)
 	if err != nil {
 		slog.ErrorContext(ctx, err.Error(), "method", "DeleteNumber")
+
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
@@ -54,8 +61,8 @@ func (a *APIController) DeleteNumber(c echo.Context, params oapi.DeleteNumberPar
 	res := oapi.NumberRes{
 		Num: &num,
 	}
-
 	slog.InfoContext(ctx, "success", "method", "DeleteNumber")
+
 	return c.JSON(http.StatusOK, res)
 }
 
@@ -67,7 +74,11 @@ func (a *APIController) PostNumber(c echo.Context, params oapi.PostNumberParams)
 		if v := recover(); v != nil {
 			errMsg := fmt.Errorf("Recovered from: %v", v)
 			slog.ErrorContext(ctx, errMsg.Error(), "method", "PostNumber")
-			if err := c.JSON(http.StatusInternalServerError, map[string]string{"message": http.StatusText(http.StatusInternalServerError)}); err != nil {
+			if err := c.JSON(
+				http.StatusInternalServerError,
+				map[string]string{
+					"message": http.StatusText(http.StatusInternalServerError),
+				}); err != nil {
 				slog.ErrorContext(ctx, err.Error(), "method", "PostNumber")
 			}
 		}
@@ -75,12 +86,14 @@ func (a *APIController) PostNumber(c echo.Context, params oapi.PostNumberParams)
 
 	if err := validateAPIKey(params.XAPIKEY); err != nil {
 		slog.ErrorContext(ctx, "Wrong API Key", "method", "PostNumber")
+
 		return c.JSON(http.StatusUnauthorized, map[string]string{"message": http.StatusText(http.StatusUnauthorized)})
 	}
 
 	req, err := validateRequestBody(c)
 	if err != nil {
 		slog.ErrorContext(ctx, err.Error(), "method", "PostNumber")
+
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": http.StatusText(http.StatusBadRequest)})
 	}
 
@@ -88,17 +101,18 @@ func (a *APIController) PostNumber(c echo.Context, params oapi.PostNumberParams)
 	res := oapi.NumberRes{
 		Num: &num,
 	}
-
 	slog.InfoContext(ctx, "success", "method", "PostNumber")
+
 	return c.JSON(http.StatusOK, res)
 }
 
 func validateAPIKey(reqKey string) error {
-	var KeyError = errors.New("Wrong API Key")
+	KeyError := errors.New("Wrong API Key")
 	cfg := env.LoadEnv()
 	if reqKey != cfg.APIKey {
 		return KeyError
 	}
+
 	return nil
 }
 
@@ -107,10 +121,10 @@ func validateRequestBody(c echo.Context) (*oapi.NumberReq, error) {
 	if err := c.Bind(req); err != nil {
 		return nil, &RequestBindError{Message: "Request Bind Error"}
 	}
-
 	if req.Num == nil {
 		return nil, &MissingRequestError{Message: "Missing Request Body"}
 	}
+
 	return req, nil
 }
 

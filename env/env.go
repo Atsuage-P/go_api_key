@@ -19,5 +19,6 @@ func LoadEnv() *Config {
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatalf("Env Parse Error: %v", err)
 	}
+
 	return &cfg
 }

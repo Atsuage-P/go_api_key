@@ -36,3 +36,7 @@ oapi-codegen -config oapi_cfg.yaml openapi.yaml > ./oapi/oapi.gen.go
   - [参考記事](https://blog.arthur1.dev/entry/2024/05/18/212731)
 - `cotroller`パッケージのテスト実行時はcontrollerディレクトリ以下に.envをコピーする必要あり
 - `panic` からの復帰と500エラーの応答は `echo` のミドルウェアが使えるが練習兼ねて自作の `defer recover` で返す
+- `golangci-lint` による静的コードチェック
+```
+golangci-lint run
+```

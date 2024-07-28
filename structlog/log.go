@@ -28,9 +28,11 @@ func (h LogHandler) Handle(ctx context.Context, record slog.Record) error {
 			if keyString, ok := key.(string); ok {
 				record.AddAttrs(slog.Any(keyString, val))
 			}
+
 			return true
 		})
 	}
+
 	return h.handler.Handle(ctx, record)
 }
 
